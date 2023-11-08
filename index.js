@@ -29,6 +29,7 @@ async function run() {
     
 
     const doctorsCollection = client.db("HospitalDB").collection("doctors");
+    const booksCollection = client.db("HospitalDB").collection("bookings");
 
 
     app.get('/doctors', async(req, res) => {
@@ -49,6 +50,45 @@ async function run() {
         res.status(500).send('Internal Server Error');
       }
     });
+
+    
+    app.get('/checkout/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const options = {
+     
+        // Include only the `title` and `imdb` fields in the returned document
+        projection: { name: 1, category: 1, price: 1, doctorName:1,visiting_time:1 },
+      };
+    
+    
+        const result = await doctorsCollection.findOne(query, options);
+        res.send(result) 
+     
+    });
+
+
+    // try to fetch specific user data
+    
+    app.get('/bookings', async(req, res) => {
+      // console.log(req.query.email);
+      let query = {};
+      if(req.query?.email){
+          query= {email: req.query.email}
+      }
+      const result  = await booksCollection.find(query).toArray();
+      res.send(result);
+    })
+
+    // trying to post data 
+    app.post('/bookings', async(req, res) => {
+      const bookings = req.body;
+      console.log(bookings);
+      const result = await booksCollection.insertOne(bookings);
+      res.send(result);
+    })
+
+
 
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
